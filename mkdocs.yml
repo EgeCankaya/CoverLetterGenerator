@@ -1,0 +1,52 @@
+site_name: CoverLetterGenerator
+repo_url: https://github.com/EgeCankaya/CoverLetterGenerator
+site_url: https://EgeCankaya.github.io/CoverLetterGenerator
+site_description: A local Python application that uses AI to instantly generate a personalized cover letter from your CV and a specific job description.
+site_author: Egemen Cankaya
+edit_uri: edit/main/docs/
+repo_name: EgeCankaya/CoverLetterGenerator
+copyright: Maintained by <a href="https://EgeCankaya.com">EgeCankaya</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["coverlettergenerator"]
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/EgeCankaya/CoverLetterGenerator
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/CoverLetterGenerator
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
