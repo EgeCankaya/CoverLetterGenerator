@@ -1,46 +1,65 @@
-.PHONY: install
-install: ## Install the virtual environment and install the pre-commit hooks
-	@echo "🚀 Creating virtual environment using uv"
-	@uv sync
-	@uv run pre-commit install
+.PHONY: help install install-dev test lint format type-check run clean
 
-.PHONY: check
-check: ## Run code quality tools.
-	@echo "🚀 Checking lock file consistency with 'pyproject.toml'"
-	@uv lock --locked
-	@echo "🚀 Linting code: Running pre-commit"
-	@uv run pre-commit run -a
-	@echo "🚀 Static type checking: Running mypy"
-	@uv run mypy
-	@echo "🚀 Checking for obsolete dependencies: Running deptry"
-	@uv run deptry .
+help: ## Show this help message
+	@echo "Available commands:"
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: test
-test: ## Test the code with pytest
-	@echo "🚀 Testing code: Running pytest"
-	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=xml
+install: ## Install the package in development mode
+	uv sync
 
-.PHONY: build
-build: clean-build ## Build wheel file
-	@echo "🚀 Creating wheel file"
-	@uvx --from build pyproject-build --installer uv
+install-dev: ## Install development dependencies
+	uv sync --group dev
 
-.PHONY: clean-build
-clean-build: ## Clean build artifacts
-	@echo "🚀 Removing build artifacts"
-	@uv run python -c "import shutil; import os; shutil.rmtree('dist') if os.path.exists('dist') else None"
+test: ## Run tests
+	uv run pytest
 
-.PHONY: docs-test
-docs-test: ## Test if documentation can be built without warnings or errors
-	@uv run mkdocs build -s
+test-cov: ## Run tests with coverage
+	uv run pytest --cov=coverlettergenerator --cov-report=html --cov-report=term
 
-.PHONY: docs
-docs: ## Build and serve the documentation
-	@uv run mkdocs serve
+lint: ## Run linting
+	uv run ruff check .
 
-.PHONY: help
-help:
-	@uv run python -c "import re; \
-	[[print(f'\033[36m{m[0]:<20}\033[0m {m[1]}') for m in re.findall(r'^([a-zA-Z_-]+):.*?## (.*)$$', open(makefile).read(), re.M)] for makefile in ('$(MAKEFILE_LIST)').strip().split()]"
+format: ## Format code
+	uv run ruff format .
 
-.DEFAULT_GOAL := help
+type-check: ## Run type checking
+	uv run mypy coverlettergenerator
+
+run: ## Run the application
+	uv run python -m coverlettergenerator
+
+run-dev: ## Run the application in development mode
+	FLASK_ENV=development FLASK_DEBUG=True uv run python -m coverlettergenerator
+
+clean: ## Clean up generated files
+	rm -rf .pytest_cache
+	rm -rf .ruff_cache
+	rm -rf htmlcov
+	rm -rf .coverage
+	rm -rf coverage.xml
+	find . -type d -name __pycache__ -delete
+	find . -type f -name "*.pyc" -delete
+
+setup: install-dev ## Set up development environment
+	@echo "Setting up development environment..."
+	@if [ ! -f .env ]; then \
+		echo "Creating .env file from template..."; \
+		cp env.example .env; \
+		echo "Please edit .env file and add your OpenAI API key"; \
+	else \
+		echo ".env file already exists"; \
+	fi
+
+check-env: ## Check if environment is properly configured
+	@if [ ! -f .env ]; then \
+		echo "❌ .env file not found. Run 'make setup' to create it."; \
+		exit 1; \
+	fi
+	@if ! grep -q "OPENAI_API_KEY=your_openai_api_key_here" .env; then \
+		echo "✅ .env file appears to be configured"; \
+	else \
+		echo "❌ Please update your OpenAI API key in .env file"; \
+		exit 1; \
+	fi
+
+all: install-dev format lint type-check test ## Run all checks and tests

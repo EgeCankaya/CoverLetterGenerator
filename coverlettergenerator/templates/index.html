@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Cover Letter Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static_files', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1 class="title">AI Cover Letter Generator</h1>
+            <p class="subtitle">Generate personalized cover letters in seconds using AI</p>
+        </header>
+
+        <main class="main-content">
+            <form id="coverLetterForm" class="form">
+                <div class="form-section">
+                    <h2>Upload Your CV</h2>
+                    <div class="file-upload-container">
+                        <input type="file" id="cvFile" name="cv_file" accept=".pdf,.docx" required>
+                        <label for="cvFile" class="file-upload-label">
+                            <div class="upload-icon">📄</div>
+                            <span>Choose PDF or DOCX file</span>
+                        </label>
+                        <div id="fileInfo" class="file-info"></div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Job Details</h2>
+                    <div class="form-group">
+                        <label for="companyName">Company Name *</label>
+                        <input type="text" id="companyName" name="company_name" required placeholder="e.g., Google, Microsoft">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="companyWebsite">Company Website (optional)</label>
+                        <input type="url" id="companyWebsite" name="company_website" placeholder="https://company.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="jobDescription">Job Description *</label>
+                        <textarea id="jobDescription" name="job_description" required placeholder="Paste the job description here..."></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="generateBtn" class="btn btn-primary">
+                        <span class="btn-text">Generate Cover Letter</span>
+                        <span class="btn-loading" style="display: none;">
+                            <div class="spinner"></div>
+                            Generating...
+                        </span>
+                    </button>
+                </div>
+            </form>
+
+            <div id="resultSection" class="result-section" style="display: none;">
+                <h2>Generated Cover Letter</h2>
+                <div class="cover-letter-container">
+                    <div id="coverLetterText" class="cover-letter-text"></div>
+                    <div class="cover-letter-actions">
+                        <button id="copyBtn" class="btn btn-secondary">
+                            <span class="btn-text">📋 Copy to Clipboard</span>
+                        </button>
+                        <button id="newLetterBtn" class="btn btn-outline">
+                            <span class="btn-text">🔄 Generate New Letter</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="errorSection" class="error-section" style="display: none;">
+                <div class="error-message">
+                    <span class="error-icon">⚠️</span>
+                    <span id="errorText"></span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <p>Your data stays local - no information is stored on our servers</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static_files', filename='js/app.js') }}"></script>
+</body>
+</html>
