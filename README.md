@@ -4,12 +4,15 @@ A local Python application that uses AI to instantly generate personalized cover
 
 ## 🚀 Features
 
-- **AI-Powered Generation**: Uses Google's Gemini 1.5 Flash to create compelling, personalized cover letters
-- **CV Upload Support**: Accepts PDF and DOCX files
+- **AI-Powered Generation**: Uses Google's Gemini 2.5 Pro to create compelling, personalized cover letters
+- **Smart Personal Information Extraction**: Automatically extracts and uses your name, address, phone number, and email from your CV
+- **CV Upload Support**: Accepts PDF and DOCX files (including tables and structured content)
 - **Local Processing**: All data stays on your machine - no information is stored on external servers
 - **Modern Web Interface**: Clean, responsive design with drag-and-drop file upload
 - **Instant Results**: Generate professional cover letters in seconds
 - **Copy to Clipboard**: Easy one-click copying of generated letters
+- **History Management**: Save and view previously generated cover letters
+- **Data Persistence**: Local SQLite database stores your CV and cover letter history
 
 ## 📋 Requirements
 
@@ -74,12 +77,33 @@ A local Python application that uses AI to instantly generate personalized cover
 
 6. **Copy the generated letter** to your clipboard and paste it into your preferred document editor
 
+### History Features
+
+The application automatically saves all generated cover letters to your local history:
+
+- **View History**: Click the "📋 View History" button to see all previously generated cover letters
+- **Search Past Letters**: Browse through your history by company name and date
+- **Reuse Content**: View full cover letters or copy them to clipboard
+- **Clear History**: Use the "🗑️ Clear All History" button to remove all stored data
+- **Local Storage**: All data is stored locally in a SQLite database file
+
+### Personal Information Extraction
+
+The AI automatically extracts and uses your personal information from your CV:
+
+- **Name**: Your full name is extracted and used in the signature
+- **Address**: Your address is included in the letter header if present
+- **Phone Number**: Your phone number is included in the header if present
+- **Email**: Your email address is included in the header if present
+
+**Note**: Make sure your CV contains clear contact information at the top for best results.
+
 ### Example Workflow
 
-1. **Prepare your CV**: Make sure your CV is in PDF or DOCX format
+1. **Prepare your CV**: Make sure your CV is in PDF or DOCX format with clear contact information
 2. **Find a job posting**: Copy the job description from the posting
 3. **Generate the letter**: Use the web interface to upload your CV and paste the job description
-4. **Review and edit**: The AI generates a first draft - review and make any necessary edits
+4. **Review and edit**: The AI generates a first draft with your personal information - review and make any necessary edits
 5. **Submit**: Use the final version for your job application
 
 ## 🏗️ Architecture
@@ -88,9 +112,10 @@ The application is built with a simple, modular architecture:
 
 - **Frontend**: HTML, CSS, JavaScript with a modern, responsive design
 - **Backend**: Flask web server handling file uploads and API requests
-- **AI Integration**: Google Gemini 1.5 Flash for cover letter generation
+- **AI Integration**: Google Gemini 2.5 Pro for cover letter generation
 - **File Processing**: Support for PDF and DOCX CV files
-- **Security**: All processing happens locally with no data storage
+- **Security**: All processing happens locally with no external data storage
+- **Database**: SQLite database for local history storage
 
 ### Project Structure
 

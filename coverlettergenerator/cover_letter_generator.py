@@ -27,7 +27,7 @@ class CoverLetterGenerator:
 
         # Configure Gemini
         genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        self.model = genai.GenerativeModel("gemini-2.0-flash-exp")
 
     def generate(self, cv_content: str, company_name: str, company_website: str = "", job_description: str = "") -> str:
         """
@@ -55,7 +55,9 @@ class CoverLetterGenerator:
             response = self.model.generate_content(prompt)
 
             if response.text:
-                return response.text.strip()
+                # Post-process to remove brackets from personal information
+                processed_text = self._remove_brackets_from_personal_info(response.text.strip())
+                return processed_text
             else:
                 return self._get_fallback_cover_letter(company_name)
 
@@ -78,14 +80,30 @@ JOB DESCRIPTION:
 CANDIDATE'S CV/RESUME:
 {cv_content}
 
-INSTRUCTIONS:
-1. Create a compelling, professional cover letter that connects the candidate's experience with the job requirements
-2. Use a formal, business-appropriate tone
-3. Include specific examples from their CV that relate to the job description
-4. Keep it concise but impactful (around 300-400 words)
-5. Start with a strong opening that mentions the specific position and company
-6. Include a clear call-to-action in the closing paragraph
-7. Format it as a proper business letter with appropriate spacing
+CRITICAL INSTRUCTIONS:
+1. Extract the candidate's personal information from their CV:
+   - Full name (use this directly in the signature without any brackets)
+   - Address (include in the header if present)
+   - Phone number (include in the header if present)
+   - Email address (include in the header if present)
+
+2. Create a compelling, professional cover letter that connects the candidate's experience with the job requirements
+3. Use a formal, business-appropriate tone
+4. Include specific examples from their CV that relate to the job description
+5. Keep it concise but impactful (around 300-400 words)
+6. Start with a strong opening that mentions the specific position and company
+7. Include a clear call-to-action in the closing paragraph
+8. Format it as a proper business letter with appropriate spacing
+
+CRITICAL: NEVER use brackets [ ] or parentheses ( ) around names, addresses, phone numbers, or email addresses. Write all personal information directly without any formatting.
+
+IMPORTANT: When using the candidate's name in the signature, write it directly without any brackets, parentheses, or other formatting. For example, if the CV shows "John Doe", write "Sincerely, John Doe" - NOT "Sincerely, [John Doe]" or "Sincerely, (John Doe)".
+
+FORMAT EXAMPLE:
+If the CV contains: "JANE SMITH" and "123 Main St, City, State"
+The signature should be: "Sincerely, Jane Smith" (no brackets, no parentheses)
+
+REMEMBER: NO BRACKETS ANYWHERE in the cover letter. Write all information directly.
 
 Please generate the cover letter now:
 """
@@ -103,5 +121,35 @@ Throughout my career, I have demonstrated strong problem-solving abilities and a
 I would welcome the opportunity to discuss how my background, skills, and enthusiasm would make me a valuable member of your team. Thank you for considering my application.
 
 Sincerely,
-[Your Name]
+[Please add your name here]
 """
+
+    def _remove_brackets_from_personal_info(self, text: str) -> str:
+        """Remove brackets from personal information in the generated text."""
+        import re
+
+        # Remove brackets from names in signatures
+        # Pattern: "Sincerely," followed by bracketed text
+        text = re.sub(r"(Sincerely,?\s*)\[([^\]]+)\]", r"\1\2", text)
+
+        # Remove brackets from names in headers
+        # Pattern: bracketed text that looks like a name (capitalized words)
+        text = re.sub(r"\[([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\]", r"\1", text)
+
+        # Remove brackets from addresses
+        # Pattern: bracketed text that contains common address elements
+        address_patterns = [
+            r"\[([0-9]+\s+[A-Za-z\s,]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd)[^]]*)\]",
+            r"\[([A-Za-z\s,]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Lane|Ln|Boulevard|Blvd)[^]]*)\]",
+        ]
+
+        for pattern in address_patterns:
+            text = re.sub(pattern, r"\1", text)
+
+        # Remove brackets from phone numbers
+        text = re.sub(r"\[((?:\+?1[-.\s]?)?\(?[0-9]{3}\)?[-.\s]?[0-9]{3}[-.\s]?[0-9]{4})\]", r"\1", text)
+
+        # Remove brackets from email addresses
+        text = re.sub(r"\[([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\]", r"\1", text)
+
+        return text

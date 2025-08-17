@@ -64,6 +64,16 @@ class FileProcessor:
                 if paragraph.text.strip():
                     text_content.append(paragraph.text)
 
+            # Also extract text from tables if present
+            for table in doc.tables:
+                for row in table.rows:
+                    row_text = []
+                    for cell in row.cells:
+                        if cell.text.strip():
+                            row_text.append(cell.text.strip())
+                    if row_text:
+                        text_content.append(" | ".join(row_text))
+
             return "\n".join(text_content)
 
         except Exception as e:

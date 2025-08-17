@@ -6,14 +6,26 @@ from flask import Flask, jsonify, render_template, request, send_from_directory
 
 from .cover_letter_generator import CoverLetterGenerator
 from .file_processor import FileProcessor
+from .models import CoverLetterHistory, db
 
 app = Flask(__name__)
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16MB max file size
 app.config["UPLOAD_FOLDER"] = tempfile.mkdtemp()
 
+# Database configuration
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///cover_letter_history.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize database
+db.init_app(app)
+
 # Initialize components
 file_processor = FileProcessor()
 cover_letter_generator = CoverLetterGenerator()
+
+# Create database tables
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/")
@@ -62,11 +74,62 @@ def generate_cover_letter():
             job_description=job_description,
         )
 
-        return jsonify({"cover_letter": cover_letter})
+        # Save to history
+        history_entry = CoverLetterHistory(
+            company_name=company_name,
+            company_website=company_website,
+            job_description=job_description,
+            cv_filename=cv_file.filename,
+            cv_content=cv_content,
+            generated_cover_letter=cover_letter,
+        )
+        db.session.add(history_entry)
+        db.session.commit()
+
+        return jsonify({"cover_letter": cover_letter, "history_id": history_entry.id})
 
     except Exception:
         app.logger.exception("Error generating cover letter")
         return jsonify({"error": "An error occurred while generating the cover letter"}), 500
+
+
+@app.route("/history")
+def get_history():
+    """Get all cover letter history entries."""
+    try:
+        history_entries = CoverLetterHistory.query.order_by(CoverLetterHistory.created_at.desc()).all()
+
+        return jsonify({"history": [entry.to_dict() for entry in history_entries]})
+    except Exception:
+        app.logger.exception("Error retrieving history")
+        return jsonify({"error": "An error occurred while retrieving history"}), 500
+
+
+@app.route("/history/<int:history_id>")
+def get_history_entry(history_id):
+    """Get a specific history entry."""
+    try:
+        entry = CoverLetterHistory.query.get_or_404(history_id)
+        return jsonify(entry.to_dict())
+    except Exception as e:
+        # Don't catch 404 errors, let them propagate
+        if hasattr(e, "code") and e.code == 404:
+            raise
+        app.logger.exception(f"Error retrieving history entry {history_id}")
+        return jsonify({"error": "An error occurred while retrieving the history entry"}), 500
+
+
+@app.route("/history/clear", methods=["DELETE"])
+def clear_history():
+    """Clear all history entries."""
+    try:
+        CoverLetterHistory.query.delete()
+        db.session.commit()
+        return jsonify({"message": "History cleared successfully"})
+    except Exception:
+        app.logger.exception("Error clearing history")
+        db.session.rollback()
+        return jsonify({"error": "An error occurred while clearing history"}), 500
 
 
 @app.route("/static/<path:filename>")
