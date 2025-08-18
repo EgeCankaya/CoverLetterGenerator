@@ -1,13 +1,15 @@
 """Database models for the Cover Letter Generator."""
 
+from __future__ import annotations
+
 from datetime import datetime
 
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
+db: SQLAlchemy = SQLAlchemy()
 
 
-class CoverLetterHistory(db.Model):
+class CoverLetterHistory(db.Model):  # type: ignore[name-defined]
     """Model for storing cover letter generation history."""
 
     __tablename__ = "cover_letter_history"
@@ -21,7 +23,7 @@ class CoverLetterHistory(db.Model):
     generated_cover_letter = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, str | int | None]:
         """Convert model to dictionary for JSON serialization."""
         return {
             "id": self.id,

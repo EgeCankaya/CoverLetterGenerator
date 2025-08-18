@@ -11,7 +11,7 @@ from .cover_letter_generator import CoverLetterGenerator
 from .file_processor import FileProcessor
 
 
-def validate_api_key():
+def validate_api_key() -> None:
     """Validate that the Gemini API key is set."""
     if not os.getenv("GEMINI_API_KEY"):
         print("❌ Error: GEMINI_API_KEY environment variable is required.")
@@ -22,14 +22,14 @@ def validate_api_key():
         sys.exit(1)
 
 
-def validate_cv_file(cv_path: Path):
+def validate_cv_file(cv_path: Path) -> None:
     """Validate that the CV file exists and is valid."""
     if not cv_path.exists():
         print(f"❌ Error: CV file not found: {cv_path}")
         sys.exit(1)
 
 
-def process_cv_file(cv_path: Path, file_processor: FileProcessor):
+def process_cv_file(cv_path: Path, file_processor: FileProcessor) -> str:
     """Process the CV file and extract text."""
     print("📄 Processing CV file...")
     try:
@@ -46,7 +46,7 @@ def process_cv_file(cv_path: Path, file_processor: FileProcessor):
     return cv_content
 
 
-def main():
+def main() -> None:
     """Main CLI entry point."""
     parser = argparse.ArgumentParser(
         description="AI Cover Letter Generator - Generate personalized cover letters using AI"

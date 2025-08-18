@@ -6,7 +6,7 @@ import sys
 from coverlettergenerator.app import app
 
 
-def main():
+def main() -> None:
     """Run the Flask application."""
     # Check if Gemini API key is set
     if not os.getenv("GEMINI_API_KEY"):

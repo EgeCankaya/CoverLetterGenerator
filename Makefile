@@ -63,3 +63,6 @@ check-env: ## Check if environment is properly configured
 	fi
 
 all: install-dev format lint type-check test ## Run all checks and tests
+
+# Target used by CI quality job
+check: lint type-check ## Run linting and type checks

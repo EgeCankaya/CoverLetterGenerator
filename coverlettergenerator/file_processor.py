@@ -1,6 +1,6 @@
 """File processing utilities for CV uploads."""
 
-from typing import ClassVar, Optional
+from typing import Any, ClassVar, Optional
 
 from docx import Document
 from PyPDF2 import PdfReader
@@ -19,7 +19,7 @@ class FileProcessor:
         file_extension = filename.lower().rsplit(".", 1)[1] if "." in filename else ""
         return f".{file_extension}" in self.ALLOWED_EXTENSIONS
 
-    def extract_text(self, file) -> Optional[str]:
+    def extract_text(self, file: Any) -> Optional[str]:
         """Extract text content from uploaded CV file."""
         try:
             filename = file.filename.lower()
@@ -35,7 +35,7 @@ class FileProcessor:
             print(f"Error extracting text from file: {e!s}")
             return None
 
-    def _extract_from_pdf(self, file) -> Optional[str]:
+    def _extract_from_pdf(self, file: Any) -> Optional[str]:
         """Extract text from PDF file."""
         try:
             # Read the PDF file
@@ -52,7 +52,7 @@ class FileProcessor:
             print(f"Error extracting text from PDF: {e!s}")
             return None
 
-    def _extract_from_docx(self, file) -> Optional[str]:
+    def _extract_from_docx(self, file: Any) -> Optional[str]:
         """Extract text from DOCX file."""
         try:
             # Read the DOCX file

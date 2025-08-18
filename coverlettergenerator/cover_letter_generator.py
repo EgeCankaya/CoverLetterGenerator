@@ -12,14 +12,14 @@ load_dotenv()
 class MissingAPIKeyError(ValueError):
     """Raised when the Gemini API key is not set."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("GEMINI_API_KEY environment variable is required")
 
 
 class CoverLetterGenerator:
     """Generates personalized cover letters using AI."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the cover letter generator with Gemini client."""
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:

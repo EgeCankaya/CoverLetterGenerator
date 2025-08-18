@@ -1,8 +1,10 @@
 """Main Flask application for the AI Cover Letter Generator."""
 
 import tempfile
+from typing import Any, Optional
 
 from flask import Flask, jsonify, render_template, request, send_from_directory
+from werkzeug.datastructures import FileStorage
 
 from .cover_letter_generator import CoverLetterGenerator
 from .file_processor import FileProcessor
@@ -21,7 +23,8 @@ db.init_app(app)
 
 # Initialize components
 file_processor = FileProcessor()
-cover_letter_generator = CoverLetterGenerator()
+# Lazily initialize the AI generator to avoid requiring API key at import time
+cover_letter_generator: Optional[CoverLetterGenerator] = None
 
 # Create database tables
 with app.app_context():
@@ -29,25 +32,25 @@ with app.app_context():
 
 
 @app.route("/")
-def index():
+def index() -> str:
     """Render the main application page."""
     return render_template("index.html")
 
 
 @app.route("/generate", methods=["POST"])
-def generate_cover_letter():
+def generate_cover_letter() -> Any:
     """Generate a cover letter based on uploaded CV and job details."""
     try:
         # Check if CV file was uploaded
         if "cv_file" not in request.files:
             return jsonify({"error": "No CV file uploaded"}), 400
 
-        cv_file = request.files["cv_file"]
-        if cv_file.filename == "":
+        cv_file: FileStorage = request.files["cv_file"]
+        if (cv_file.filename or "") == "":
             return jsonify({"error": "No CV file selected"}), 400
 
         # Validate file type
-        if not file_processor.is_valid_file(cv_file.filename):
+        if not file_processor.is_valid_file(cv_file.filename or ""):
             return jsonify({"error": "Invalid file type. Please upload PDF or DOCX files only."}), 400
 
         # Get form data
@@ -65,6 +68,11 @@ def generate_cover_letter():
         cv_content = file_processor.extract_text(cv_file)
         if not cv_content:
             return jsonify({"error": "Could not extract text from CV file"}), 400
+
+        # Lazily create the generator only when needed
+        global cover_letter_generator
+        if cover_letter_generator is None:
+            cover_letter_generator = CoverLetterGenerator()
 
         # Generate cover letter
         cover_letter = cover_letter_generator.generate(
@@ -94,7 +102,7 @@ def generate_cover_letter():
 
 
 @app.route("/history")
-def get_history():
+def get_history() -> Any:
     """Get all cover letter history entries."""
     try:
         history_entries = CoverLetterHistory.query.order_by(CoverLetterHistory.created_at.desc()).all()
@@ -106,7 +114,7 @@ def get_history():
 
 
 @app.route("/history/<int:history_id>")
-def get_history_entry(history_id):
+def get_history_entry(history_id: int) -> Any:
     """Get a specific history entry."""
     try:
         entry = CoverLetterHistory.query.get_or_404(history_id)
@@ -120,7 +128,7 @@ def get_history_entry(history_id):
 
 
 @app.route("/history/clear", methods=["DELETE"])
-def clear_history():
+def clear_history() -> Any:
     """Clear all history entries."""
     try:
         CoverLetterHistory.query.delete()
@@ -133,7 +141,7 @@ def clear_history():
 
 
 @app.route("/static/<path:filename>")
-def static_files(filename):
+def static_files(filename: str) -> Any:
     """Serve static files."""
     return send_from_directory("static", filename)
 
